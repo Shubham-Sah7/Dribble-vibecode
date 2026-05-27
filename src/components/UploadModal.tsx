@@ -1,12 +1,14 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Tag, Image, Check, Loader2, AlertTriangle, Upload } from 'lucide-react'
+import { X, Tag, ImageIcon, Check, Loader2, AlertTriangle, Upload, Trash2 } from 'lucide-react'
 import { useUrlPreview } from '@/hooks/useUrlPreview'
 import { useProjects } from '@/context/ProjectsContext'
 import { type Project } from '@/data/projects'
+import { compressImage, formatBytes, base64SizeKb } from '@/lib/imageUtils'
 
 const tools = ['Lovable', 'Cursor', 'Bolt', 'v0', 'Replit', 'Vercel', 'Framer', 'Custom']
 const categoryOptions = ['SaaS', 'AI Tools', 'Mobile', 'Finance', 'Healthcare', 'Productivity', 'Dev Tools', 'Design']
+const ACCEPTED = ['image/jpeg', 'image/png', 'image/webp']
 
 interface UploadModalProps {
   open: boolean
@@ -46,13 +48,22 @@ export function UploadModal({ open, onOpenChange, prefilledUrl = '' }: UploadMod
   const [tool, setTool] = useState('')
   const [codeUrl, setCodeUrl] = useState('')
 
-  // Step 3
+  // Step 3 — tags
   const [tagInput, setTagInput] = useState('')
   const [tags, setTags] = useState<string[]>([])
 
+  // Step 3 — thumbnail
+  const [thumbnail, setThumbnail] = useState<string | null>(null)
+  const [thumbUploading, setThumbUploading] = useState(false)
+  const [thumbError, setThumbError] = useState<string | null>(null)
+  const [thumbOriginalSize, setThumbOriginalSize] = useState<number>(0)
+  const [thumbCompressedKb, setThumbCompressedKb] = useState<number>(0)
+  const [isDragging, setIsDragging] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
   const preview = useUrlPreview(step >= 1 ? liveUrl : '')
 
-  // Auto-fill from preview metadata
+  // Auto-fill metadata from URL preview
   useEffect(() => {
     if (!preview.loading && !preview.error) {
       if (preview.title && !name) setName(preview.title.slice(0, 60))
@@ -78,6 +89,9 @@ export function UploadModal({ open, onOpenChange, prefilledUrl = '' }: UploadMod
     setLiveUrl(''); setName(''); setDescription('')
     setCategory(''); setTool(''); setCodeUrl('')
     setTagInput(''); setTags([])
+    setThumbnail(null); setThumbUploading(false)
+    setThumbError(null); setThumbOriginalSize(0)
+    setThumbCompressedKb(0); setIsDragging(false)
   }
 
   const addTag = () => {
@@ -88,7 +102,53 @@ export function UploadModal({ open, onOpenChange, prefilledUrl = '' }: UploadMod
     }
   }
 
+  const processFile = useCallback(async (file: File) => {
+    if (!ACCEPTED.includes(file.type)) {
+      setThumbError('Please upload a JPG, PNG, or WEBP image.')
+      return
+    }
+    if (file.size > 20 * 1024 * 1024) {
+      setThumbError('File too large. Max 20 MB.')
+      return
+    }
+
+    setThumbError(null)
+    setThumbUploading(true)
+    setThumbOriginalSize(file.size)
+
+    try {
+      const compressed = await compressImage(file)
+      const kb = base64SizeKb(compressed)
+      setThumbCompressedKb(kb)
+      setThumbnail(compressed)
+    } catch {
+      setThumbError('Could not process image. Please try another file.')
+    } finally {
+      setThumbUploading(false)
+    }
+  }, [])
+
+  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) processFile(file)
+    // reset so the same file can be re-selected
+    e.target.value = ''
+  }
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(false)
+    const file = e.dataTransfer.files?.[0]
+    if (file) processFile(file)
+  }, [processFile])
+
+  const handleDragOver = (e: React.DragEvent) => { e.preventDefault(); setIsDragging(true) }
+  const handleDragLeave = () => setIsDragging(false)
+
   const handlePublish = () => {
+    // Thumbnail priority: manual upload > Microlink screenshot > none
+    const finalThumbnail = thumbnail ?? preview.screenshotUrl ?? undefined
+
     const project: Project = {
       id: ++nextId,
       title: name || 'Untitled Project',
@@ -111,7 +171,7 @@ export function UploadModal({ open, onOpenChange, prefilledUrl = '' }: UploadMod
       gradient: '',
       accentColor: '#6366f1',
       cardSize: 'normal',
-      screenshotUrl: preview.screenshotUrl,
+      screenshotUrl: finalThumbnail,
       isUserSubmitted: true,
     }
 
@@ -163,7 +223,7 @@ export function UploadModal({ open, onOpenChange, prefilledUrl = '' }: UploadMod
             </button>
           </div>
 
-          {/* Step dots */}
+          {/* Step indicator */}
           <div className="flex items-center px-6 pt-4 gap-2">
             {[1, 2, 3].map(s => (
               <div key={s} className="flex items-center flex-1">
@@ -176,7 +236,7 @@ export function UploadModal({ open, onOpenChange, prefilledUrl = '' }: UploadMod
           </div>
 
           {/* Body */}
-          <div className="px-6 py-5 space-y-4 max-h-[55vh] overflow-y-auto">
+          <div className="px-6 py-5 space-y-4 max-h-[60vh] overflow-y-auto">
             {published ? (
               <motion.div
                 className="py-10 text-center"
@@ -214,7 +274,21 @@ export function UploadModal({ open, onOpenChange, prefilledUrl = '' }: UploadMod
                 tagInput={tagInput} setTagInput={setTagInput}
                 tags={tags} setTags={setTags}
                 addTag={addTag}
-                inputClass={inputClass} labelClass={labelClass}
+                thumbnail={thumbnail}
+                setThumbnail={setThumbnail}
+                thumbUploading={thumbUploading}
+                thumbError={thumbError}
+                thumbOriginalSize={thumbOriginalSize}
+                thumbCompressedKb={thumbCompressedKb}
+                isDragging={isDragging}
+                fileInputRef={fileInputRef}
+                handleFileInput={handleFileInput}
+                handleDrop={handleDrop}
+                handleDragOver={handleDragOver}
+                handleDragLeave={handleDragLeave}
+                autoPreviewUrl={preview.screenshotUrl}
+                inputClass={inputClass}
+                labelClass={labelClass}
               />
             )}
           </div>
@@ -239,7 +313,8 @@ export function UploadModal({ open, onOpenChange, prefilledUrl = '' }: UploadMod
               ) : (
                 <button
                   onClick={handlePublish}
-                  className="px-5 py-2 text-sm font-medium bg-neutral-900 text-white rounded hover:bg-neutral-700 transition-colors"
+                  disabled={thumbUploading}
+                  className="px-5 py-2 text-sm font-medium bg-neutral-900 text-white rounded hover:bg-neutral-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   Publish Project
                 </button>
@@ -286,7 +361,6 @@ function StepOne({ liveUrl, setLiveUrl, preview, inputClass, labelClass }: {
         </p>
       </div>
 
-      {/* Preview panel */}
       {liveUrl && (
         <div className="rounded-md border border-neutral-200 overflow-hidden">
           <div className="h-36 bg-neutral-50 relative flex items-center justify-center">
@@ -303,14 +377,10 @@ function StepOne({ liveUrl, setLiveUrl, preview, inputClass, labelClass }: {
               </div>
             )}
             {!preview.loading && !preview.error && preview.screenshotUrl && (
-              <img
-                src={preview.screenshotUrl}
-                alt="Preview"
-                className="w-full h-full object-cover object-top"
-              />
+              <img src={preview.screenshotUrl} alt="Preview" className="w-full h-full object-cover object-top" />
             )}
             {!preview.loading && !preview.error && !preview.screenshotUrl && liveUrl && (
-              <div className="flex flex-col items-center gap-1.5 text-center px-4">
+              <div className="flex flex-col items-center gap-1.5">
                 <div className="w-8 h-8 rounded-full bg-neutral-100 border border-neutral-200 flex items-center justify-center text-sm">✓</div>
                 <span className="text-xs text-neutral-500">URL looks valid</span>
               </div>
@@ -390,16 +460,44 @@ function StepTwo({ name, setName, description, setDescription, category, setCate
   )
 }
 
-function StepThree({ tagInput, setTagInput, tags, setTags, addTag, inputClass, labelClass }: {
+interface StepThreeProps {
   tagInput: string; setTagInput: (v: string) => void
   tags: string[]; setTags: (v: string[]) => void
   addTag: () => void
-  inputClass: string; labelClass: string
-}) {
+  thumbnail: string | null
+  setThumbnail: (v: string | null) => void
+  thumbUploading: boolean
+  thumbError: string | null
+  thumbOriginalSize: number
+  thumbCompressedKb: number
+  isDragging: boolean
+  fileInputRef: React.RefObject<HTMLInputElement | null>
+  handleFileInput: (e: React.ChangeEvent<HTMLInputElement>) => void
+  handleDrop: (e: React.DragEvent) => void
+  handleDragOver: (e: React.DragEvent) => void
+  handleDragLeave: () => void
+  autoPreviewUrl?: string
+  inputClass: string
+  labelClass: string
+}
+
+function StepThree({
+  tagInput, setTagInput, tags, setTags, addTag,
+  thumbnail, setThumbnail,
+  thumbUploading, thumbError, thumbOriginalSize, thumbCompressedKb,
+  isDragging, fileInputRef,
+  handleFileInput, handleDrop, handleDragOver, handleDragLeave,
+  autoPreviewUrl,
+  inputClass, labelClass,
+}: StepThreeProps) {
   return (
     <>
+      {/* Tags */}
       <div>
-        <label className={labelClass}><Tag className="w-3 h-3 inline mr-1 text-neutral-400" />Tags <span className="text-neutral-400 font-normal">(up to 6)</span></label>
+        <label className={labelClass}>
+          <Tag className="w-3 h-3 inline mr-1 text-neutral-400" />
+          Tags <span className="text-neutral-400 font-normal">(up to 6)</span>
+        </label>
         <div className="flex gap-2">
           <input
             value={tagInput}
@@ -408,7 +506,10 @@ function StepThree({ tagInput, setTagInput, tags, setTags, addTag, inputClass, l
             placeholder="e.g. AI, Dashboard"
             className={`${inputClass} flex-1`}
           />
-          <button onClick={addTag} className="px-3 text-xs border border-neutral-200 rounded text-neutral-600 hover:border-neutral-400 transition-all">
+          <button
+            onClick={addTag}
+            className="px-3 text-xs border border-neutral-200 rounded text-neutral-600 hover:border-neutral-400 transition-all"
+          >
             Add
           </button>
         </div>
@@ -418,7 +519,7 @@ function StepThree({ tagInput, setTagInput, tags, setTags, addTag, inputClass, l
               <span
                 key={tag}
                 onClick={() => setTags(tags.filter(t => t !== tag))}
-                className="text-xs px-2.5 py-1 rounded-sm bg-neutral-100 border border-neutral-200 text-neutral-600 cursor-pointer hover:bg-neutral-200 transition-colors"
+                className="text-xs px-2.5 py-1 rounded-sm bg-neutral-100 border border-neutral-200 text-neutral-600 cursor-pointer hover:bg-neutral-200 transition-colors select-none"
               >
                 {tag} ×
               </span>
@@ -427,15 +528,117 @@ function StepThree({ tagInput, setTagInput, tags, setTags, addTag, inputClass, l
         )}
       </div>
 
+      {/* Thumbnail upload */}
       <div>
-        <label className={labelClass}><Image className="w-3 h-3 inline mr-1 text-neutral-400" />Thumbnail <span className="text-neutral-400 font-normal">(optional — auto-generated if empty)</span></label>
-        <div className="border-2 border-dashed border-neutral-200 hover:border-neutral-400 rounded p-8 flex flex-col items-center gap-2 transition-colors cursor-pointer">
-          <Upload className="w-5 h-5 text-neutral-400" />
-          <span className="text-xs text-neutral-500">
-            Drop image or <span className="text-neutral-700 underline underline-offset-2">browse</span>
-          </span>
-          <span className="text-[10px] text-neutral-400">PNG, JPG up to 5MB</span>
-        </div>
+        <label className={labelClass}>
+          <ImageIcon className="w-3 h-3 inline mr-1 text-neutral-400" />
+          Thumbnail
+          {autoPreviewUrl && !thumbnail && (
+            <span className="ml-1.5 text-neutral-400 font-normal">
+              — auto-generated from URL if skipped
+            </span>
+          )}
+        </label>
+
+        {/* Hidden file input */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          className="hidden"
+          onChange={handleFileInput}
+        />
+
+        {thumbnail ? (
+          /* Preview of uploaded image */
+          <div className="relative rounded-md border border-neutral-200 overflow-hidden">
+            <img
+              src={thumbnail}
+              alt="Thumbnail preview"
+              className="w-full h-44 object-cover object-top"
+            />
+            {/* Overlay controls */}
+            <div className="absolute inset-0 bg-black/0 hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 hover:opacity-100 gap-2">
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="px-3 py-1.5 text-xs font-medium bg-white text-neutral-800 rounded shadow hover:bg-neutral-50 transition-colors"
+              >
+                Replace
+              </button>
+              <button
+                onClick={() => setThumbnail(null)}
+                className="w-7 h-7 flex items-center justify-center bg-white rounded shadow hover:bg-neutral-50 transition-colors"
+              >
+                <Trash2 className="w-3.5 h-3.5 text-neutral-600" />
+              </button>
+            </div>
+            {/* Size badge */}
+            <div className="absolute bottom-2 right-2 px-1.5 py-0.5 bg-black/50 text-white text-[10px] rounded">
+              {thumbCompressedKb} KB
+              {thumbOriginalSize > 0 && (
+                <span className="opacity-60 ml-1">
+                  (was {formatBytes(thumbOriginalSize)})
+                </span>
+              )}
+            </div>
+          </div>
+        ) : (
+          /* Drop zone */
+          <div
+            onDrop={handleDrop}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onClick={() => fileInputRef.current?.click()}
+            className={`relative border-2 border-dashed rounded-md p-8 flex flex-col items-center gap-2.5 cursor-pointer transition-all select-none ${
+              isDragging
+                ? 'border-neutral-500 bg-neutral-50'
+                : 'border-neutral-200 hover:border-neutral-400 hover:bg-neutral-50/50'
+            }`}
+          >
+            {thumbUploading ? (
+              <>
+                <Loader2 className="w-5 h-5 text-neutral-400 animate-spin" />
+                <span className="text-xs text-neutral-500">Compressing image…</span>
+              </>
+            ) : isDragging ? (
+              <>
+                <Upload className="w-5 h-5 text-neutral-500" />
+                <span className="text-xs text-neutral-600 font-medium">Drop to upload</span>
+              </>
+            ) : (
+              <>
+                <Upload className="w-5 h-5 text-neutral-400" />
+                <span className="text-xs text-neutral-500">
+                  Drop image or{' '}
+                  <span className="text-neutral-700 underline underline-offset-2">browse</span>
+                </span>
+                <span className="text-[10px] text-neutral-400">JPG, PNG, WEBP · max 20 MB · auto-compressed</span>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* Upload error */}
+        {thumbError && (
+          <p className="mt-1.5 text-[11px] text-red-500 flex items-center gap-1">
+            <AlertTriangle className="w-3 h-3 shrink-0" />
+            {thumbError}
+          </p>
+        )}
+
+        {/* Auto-preview fallback notice */}
+        {!thumbnail && autoPreviewUrl && (
+          <div className="mt-2 rounded-md border border-neutral-100 overflow-hidden">
+            <div className="flex items-center gap-2 px-3 py-2 bg-neutral-50 border-b border-neutral-100">
+              <span className="text-[10px] text-neutral-400 uppercase tracking-wide font-medium">Auto-generated preview</span>
+            </div>
+            <img
+              src={autoPreviewUrl}
+              alt="Auto preview"
+              className="w-full h-24 object-cover object-top opacity-80"
+            />
+          </div>
+        )}
       </div>
     </>
   )
