@@ -24,6 +24,8 @@ export interface Project {
   cardSize: 'normal' | 'tall' | 'square'
   featured?: boolean
   trending?: boolean
+  screenshotUrl?: string
+  isUserSubmitted?: boolean
 }
 
 export const projects: Project[] = [

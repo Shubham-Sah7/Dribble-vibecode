@@ -1,12 +1,25 @@
 import { useState } from 'react'
-import { Heart, Eye, Bookmark, ExternalLink, Code2 } from 'lucide-react'
+import { Heart, Eye, Bookmark, ExternalLink, Code2, Expand } from 'lucide-react'
 import { type Project } from '@/data/projects'
 
-function Thumbnail({ project }: { project: Project }) {
+function Thumbnail({ project, onClick }: { project: Project; onClick?: () => void }) {
   const aspectClass =
     project.cardSize === 'square' ? 'aspect-square' :
     project.cardSize === 'tall'   ? 'aspect-[4/3]'  :
     'aspect-video'
+
+  if (project.screenshotUrl) {
+    return (
+      <div className={`relative overflow-hidden ${aspectClass} bg-neutral-100 cursor-pointer`} onClick={onClick}>
+        <img
+          src={project.screenshotUrl}
+          alt={project.title}
+          className="w-full h-full object-cover object-top"
+          loading="lazy"
+        />
+      </div>
+    )
+  }
 
   return (
     <div className={`relative overflow-hidden ${aspectClass} bg-neutral-100`}>
@@ -49,21 +62,25 @@ function Thumbnail({ project }: { project: Project }) {
 
 interface ProjectCardProps {
   project: Project
+  onClick?: () => void
 }
 
-export function ProjectCard({ project }: ProjectCardProps) {
+export function ProjectCard({ project, onClick }: ProjectCardProps) {
   const [liked, setLiked] = useState(false)
   const [saved, setSaved] = useState(false)
   const [likeCount, setLikeCount] = useState(project.likes)
 
   const fmtLikes = (n: number) => n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n)
 
+  const hasLiveUrl = project.liveUrl && project.liveUrl !== '#'
+  const hasCodeUrl = project.codeUrl && project.codeUrl !== '#'
+
   return (
     <div className="group bg-white border border-neutral-200 rounded-lg overflow-hidden card-lift">
 
       {/* Thumbnail */}
       <div className="relative overflow-hidden">
-        <Thumbnail project={project} />
+        <Thumbnail project={project} onClick={onClick} />
 
         {/* Bookmark */}
         <button
@@ -76,20 +93,48 @@ export function ProjectCard({ project }: ProjectCardProps) {
 
         {/* Hover overlay */}
         <div className="absolute inset-0 bg-white/92 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center gap-2 z-10">
-          <a
-            href={project.liveUrl}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-neutral-900 text-white hover:bg-neutral-700 transition-colors rounded"
-          >
-            <ExternalLink className="w-3 h-3" />
-            Open Live
-          </a>
-          <a
-            href={project.codeUrl}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-neutral-300 text-neutral-700 hover:bg-neutral-50 transition-colors rounded"
-          >
-            <Code2 className="w-3 h-3" />
-            View Code
-          </a>
+          {onClick && (
+            <button
+              onClick={onClick}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-neutral-900 text-white hover:bg-neutral-700 transition-colors rounded"
+            >
+              <Expand className="w-3 h-3" />
+              Preview
+            </button>
+          )}
+          {hasLiveUrl && (
+            <a
+              href={project.liveUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-neutral-300 text-neutral-700 hover:bg-neutral-50 transition-colors rounded"
+            >
+              <ExternalLink className="w-3 h-3" />
+              Open Live
+            </a>
+          )}
+          {!onClick && hasLiveUrl && (
+            <a
+              href={project.liveUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-neutral-900 text-white hover:bg-neutral-700 transition-colors rounded"
+            >
+              <ExternalLink className="w-3 h-3" />
+              Open Live
+            </a>
+          )}
+          {hasCodeUrl && (
+            <a
+              href={project.codeUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-neutral-300 text-neutral-700 hover:bg-neutral-50 transition-colors rounded"
+            >
+              <Code2 className="w-3 h-3" />
+              View Code
+            </a>
+          )}
         </div>
       </div>
 
@@ -97,7 +142,12 @@ export function ProjectCard({ project }: ProjectCardProps) {
       <div className="p-3.5">
         {/* Title + tool */}
         <div className="flex items-start justify-between gap-2 mb-1.5">
-          <h3 className="text-sm font-semibold text-neutral-900 leading-snug">{project.title}</h3>
+          <h3
+            className={`text-sm font-semibold text-neutral-900 leading-snug ${onClick ? 'cursor-pointer hover:text-neutral-600 transition-colors' : ''}`}
+            onClick={onClick}
+          >
+            {project.title}
+          </h3>
           <span className="shrink-0 text-[10px] text-neutral-400 font-medium mt-0.5">{project.tool}</span>
         </div>
 

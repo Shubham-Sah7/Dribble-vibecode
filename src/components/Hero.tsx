@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 
 interface HeroProps {
   onExplore: () => void
-  onUpload: () => void
+  onUpload: (url?: string) => void
 }
 
 const stats = [
@@ -17,7 +17,7 @@ export function Hero({ onExplore, onUpload }: HeroProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    onUpload()
+    onUpload(url)
   }
 
   return (
