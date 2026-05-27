@@ -1,39 +1,105 @@
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
-import "./index.css"
+import { useState, useRef, useMemo } from 'react'
+import { Navbar } from './components/Navbar'
+import { Hero } from './components/Hero'
+import { CategoryBar } from './components/CategoryBar'
+import { FilterBar } from './components/FilterBar'
+import { ProjectCard } from './components/ProjectCard'
+import { Sidebar } from './components/Sidebar'
+import { UploadModal } from './components/UploadModal'
+import { projects, type Project } from './data/projects'
 
-function App() {
+function parseViews(v: string): number {
+  if (v.endsWith('k')) return parseFloat(v) * 1000
+  return parseFloat(v)
+}
+
+function sortProjects(list: Project[], filter: string): Project[] {
+  const toolFilters = ['Lovable', 'Cursor', 'Bolt', 'v0', 'Replit', 'Vercel']
+  if (toolFilters.includes(filter)) {
+    return [...list].sort((a, b) => (a.tool === filter ? -1 : 1) - (b.tool === filter ? -1 : 1))
+  }
+  switch (filter) {
+    case 'trending':    return [...list].sort((a, b) => (b.trending ? 1 : 0) - (a.trending ? 1 : 0))
+    case 'most_liked':  return [...list].sort((a, b) => b.likes - a.likes)
+    case 'most_viewed': return [...list].sort((a, b) => parseViews(b.views) - parseViews(a.views))
+    case 'newest':      return [...list].reverse()
+    default:            return list
+  }
+}
+
+function EmptyState() {
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-8">
-      <div className="max-w-md w-full space-y-6">
-        <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight">shadcn/ui Ready</h1>
-          <p className="text-muted-foreground">Vite + React + Tailwind + shadcn/ui</p>
-          <Badge variant="secondary">Dribble Vibe Code</Badge>
-        </div>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Get Started</CardTitle>
-            <CardDescription>Your shadcn/ui setup is complete and working.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="you@example.com" />
-            </div>
-            <div className="flex gap-2">
-              <Button className="flex-1">Primary</Button>
-              <Button variant="outline" className="flex-1">Outline</Button>
-            </div>
-          </CardContent>
-        </Card>
+    <div className="py-24 flex flex-col items-center text-center">
+      <div className="w-12 h-12 rounded border border-neutral-200 flex items-center justify-center mb-4 text-xl">
+        🔭
       </div>
+      <h3 className="text-sm font-medium text-neutral-700 mb-1">No projects found</h3>
+      <p className="text-xs text-neutral-400">Try a different category or filter</p>
     </div>
   )
 }
 
-export default App
+export default function App() {
+  const [uploadOpen, setUploadOpen] = useState(false)
+  const [activeCategory, setActiveCategory] = useState('all')
+  const [activeFilter, setActiveFilter] = useState('trending')
+  const feedRef = useRef<HTMLDivElement>(null)
+
+  const filtered = useMemo(() => {
+    const byCategory = activeCategory === 'all'
+      ? projects
+      : projects.filter(p => p.category === activeCategory)
+    return sortProjects(byCategory, activeFilter)
+  }, [activeCategory, activeFilter])
+
+  const scrollToFeed = () => {
+    feedRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
+  return (
+    <div className="min-h-screen bg-white">
+      <Navbar onUploadClick={() => setUploadOpen(true)} />
+      <Hero onExplore={scrollToFeed} onUpload={() => setUploadOpen(true)} />
+      <CategoryBar active={activeCategory} onChange={setActiveCategory} />
+
+      <div ref={feedRef} className="max-w-screen-xl mx-auto px-5 sm:px-8 py-10 flex gap-10 items-start">
+
+        {/* Feed */}
+        <main className="flex-1 min-w-0">
+          <div className="flex items-center justify-between mb-5">
+            <div>
+              <h2 className="text-sm font-semibold text-neutral-900">
+                {activeCategory === 'all' ? 'All Projects' : activeCategory}
+              </h2>
+              <p className="text-xs text-neutral-400 mt-0.5">{filtered.length} projects</p>
+            </div>
+          </div>
+
+          <FilterBar active={activeFilter} onChange={setActiveFilter} />
+
+          <div className="mt-6">
+            {filtered.length === 0 ? (
+              <EmptyState />
+            ) : (
+              <div className="columns-1 sm:columns-2 xl:columns-3 gap-5">
+                {filtered.map(project => (
+                  <div key={project.id} className="break-inside-avoid mb-5">
+                    <ProjectCard project={project} />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </main>
+
+        {/* Sidebar */}
+        <aside className="hidden lg:block w-56 xl:w-60 shrink-0 sticky top-28">
+          <Sidebar />
+        </aside>
+
+      </div>
+
+      <UploadModal open={uploadOpen} onOpenChange={setUploadOpen} />
+    </div>
+  )
+}
