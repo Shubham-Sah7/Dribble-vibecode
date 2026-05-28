@@ -133,7 +133,7 @@ export default function App() {
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="text-xs text-neutral-500 hover:text-neutral-900 transition-colors border border-neutral-200 rounded-md px-3 py-1.5 hover:border-neutral-400"
+                className="text-xs text-neutral-500 hover:text-neutral-900 transition-colors border border-neutral-200 rounded px-3 py-1.5 hover:border-neutral-300"
               >
                 Clear search
               </button>

@@ -59,7 +59,7 @@ export function ProjectDetailModal({ project, onClose }: ProjectDetailModalProps
                   href={project.liveUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-neutral-900 text-white hover:bg-neutral-700 transition-colors rounded"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-[#eb3403] text-white hover:bg-[#c42d02] transition-colors rounded"
                 >
                   <ExternalLink className="w-3 h-3" />
                   Open Live
@@ -119,7 +119,7 @@ export function ProjectDetailModal({ project, onClose }: ProjectDetailModalProps
                         href={project.liveUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-neutral-900 text-white hover:bg-neutral-700 transition-colors rounded"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-[#eb3403] text-white hover:bg-[#c42d02] transition-colors rounded"
                       >
                         <ExternalLink className="w-3 h-3" />
                         Open in new tab

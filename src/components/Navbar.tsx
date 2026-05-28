@@ -7,6 +7,23 @@ interface NavbarProps {
   onSearchChange: (q: string) => void
 }
 
+function PGLogo() {
+  return (
+    <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Product Gallery">
+      <rect width="30" height="30" rx="5" fill="#1c1c1c" />
+      <text
+        x="15" y="21.5"
+        textAnchor="middle"
+        fontFamily="'Arial Black','Helvetica Neue',Arial,sans-serif"
+        fontWeight="900"
+        fontSize="16"
+        fill="#eb3403"
+        letterSpacing="-0.5"
+      >PG</text>
+    </svg>
+  )
+}
+
 export function Navbar({ onUploadClick, searchQuery, onSearchChange }: NavbarProps) {
   const [mobileOpen, setMobileOpen] = useState(false)
 
@@ -15,8 +32,11 @@ export function Navbar({ onUploadClick, searchQuery, onSearchChange }: NavbarPro
       <div className="max-w-screen-xl mx-auto px-5 sm:px-8 h-14 flex items-center gap-5">
 
         {/* Logo */}
-        <a href="#" className="shrink-0 text-neutral-900 font-bold text-lg tracking-tight hover:opacity-70 transition-opacity">
-          Vibbl
+        <a href="#" className="flex items-center gap-2.5 shrink-0 hover:opacity-80 transition-opacity">
+          <PGLogo />
+          <span className="font-semibold text-[15px] text-neutral-900 tracking-tight hidden sm:block">
+            Product Gallery
+          </span>
         </a>
 
         {/* Search */}
@@ -26,7 +46,7 @@ export function Navbar({ onUploadClick, searchQuery, onSearchChange }: NavbarPro
             value={searchQuery}
             onChange={e => onSearchChange(e.target.value)}
             placeholder="Search products, makers, tools…"
-            className="w-full bg-neutral-50 border border-neutral-200 rounded-md pl-9 pr-3 py-1.5 text-sm text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:border-neutral-400 focus:bg-white transition-all"
+            className="w-full bg-neutral-50 border border-neutral-200 rounded px-9 py-1.5 text-sm text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:border-[#eb3403]/40 focus:bg-white transition-all"
           />
           {searchQuery && (
             <button
@@ -55,7 +75,7 @@ export function Navbar({ onUploadClick, searchQuery, onSearchChange }: NavbarPro
         <div className="flex items-center gap-3 ml-auto">
           <button
             onClick={onUploadClick}
-            className="hidden sm:flex items-center gap-1.5 px-4 py-1.5 text-sm font-medium bg-neutral-900 text-white hover:bg-neutral-700 transition-colors rounded-md"
+            className="hidden sm:flex items-center gap-1.5 px-4 py-1.5 text-sm font-medium bg-[#eb3403] text-white hover:bg-[#c42d02] active:bg-[#a82602] transition-colors rounded"
           >
             Submit
           </button>
@@ -82,7 +102,7 @@ export function Navbar({ onUploadClick, searchQuery, onSearchChange }: NavbarPro
               value={searchQuery}
               onChange={e => onSearchChange(e.target.value)}
               placeholder="Search products, makers, tools…"
-              className="w-full bg-neutral-50 border border-neutral-200 rounded-md pl-9 pr-3 py-2 text-sm focus:outline-none focus:border-neutral-400 transition-all"
+              className="w-full bg-neutral-50 border border-neutral-200 rounded pl-9 pr-3 py-2 text-sm focus:outline-none focus:border-[#eb3403]/40 transition-all"
             />
           </div>
           {['Explore', 'Makers', 'Leaderboard'].map(item => (
@@ -93,7 +113,7 @@ export function Navbar({ onUploadClick, searchQuery, onSearchChange }: NavbarPro
           <div className="pt-2 border-t border-neutral-100 mt-2">
             <button
               onClick={() => { onUploadClick(); setMobileOpen(false) }}
-              className="w-full py-2 text-sm font-medium bg-neutral-900 text-white rounded-md transition-colors"
+              className="w-full py-2 text-sm font-medium bg-[#eb3403] text-white hover:bg-[#c42d02] rounded transition-colors"
             >
               Submit a Project
             </button>

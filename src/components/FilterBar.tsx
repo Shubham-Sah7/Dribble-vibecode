@@ -17,8 +17,8 @@ export function FilterBar({ active, onChange }: FilterBarProps) {
             className={`
               shrink-0 px-3 py-1.5 text-xs rounded transition-all
               ${isActive
-                ? 'bg-neutral-900 text-white font-medium'
-                : 'border border-neutral-200 text-neutral-500 hover:border-neutral-400 hover:text-neutral-700'
+                ? 'bg-[#eb3403] text-white font-medium'
+                : 'border border-neutral-200 text-neutral-500 hover:border-neutral-300 hover:text-neutral-700'
               }
             `}
           >

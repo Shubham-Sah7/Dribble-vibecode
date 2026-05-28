@@ -227,10 +227,10 @@ export function UploadModal({ open, onOpenChange, prefilledUrl = '' }: UploadMod
           <div className="flex items-center px-6 pt-4 gap-2">
             {[1, 2, 3].map(s => (
               <div key={s} className="flex items-center flex-1">
-                <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-semibold transition-all border ${step >= s ? 'bg-neutral-900 text-white border-neutral-900' : 'bg-white text-neutral-400 border-neutral-200'}`}>
+                <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-semibold transition-all border ${step >= s ? 'bg-[#eb3403] text-white border-[#eb3403]' : 'bg-white text-neutral-400 border-neutral-200'}`}>
                   {step > s ? <Check className="w-2.5 h-2.5" /> : s}
                 </div>
-                {s < 3 && <div className={`flex-1 h-px mx-1.5 transition-all ${step > s ? 'bg-neutral-900' : 'bg-neutral-200'}`} />}
+                {s < 3 && <div className={`flex-1 h-px mx-1.5 transition-all ${step > s ? 'bg-[#eb3403]' : 'bg-neutral-200'}`} />}
               </div>
             ))}
           </div>
@@ -247,7 +247,7 @@ export function UploadModal({ open, onOpenChange, prefilledUrl = '' }: UploadMod
                   <Check className="w-6 h-6 text-neutral-700" />
                 </div>
                 <h3 className="text-base font-semibold text-neutral-900 mb-1">Project submitted!</h3>
-                <p className="text-sm text-neutral-500">Your build is now live on Vibbl.</p>
+                <p className="text-sm text-neutral-500">Your build is now live on Product Gallery.</p>
               </motion.div>
 
             ) : step === 1 ? (
@@ -306,7 +306,7 @@ export function UploadModal({ open, onOpenChange, prefilledUrl = '' }: UploadMod
                 <button
                   onClick={() => setStep(s => s + 1)}
                   disabled={step === 1 ? !canProceedStep1 : !canProceedStep2}
-                  className="px-5 py-2 text-sm font-medium bg-neutral-900 text-white rounded hover:bg-neutral-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="px-5 py-2 text-sm font-medium bg-[#eb3403] text-white rounded hover:bg-[#c42d02] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   Continue
                 </button>
@@ -314,7 +314,7 @@ export function UploadModal({ open, onOpenChange, prefilledUrl = '' }: UploadMod
                 <button
                   onClick={handlePublish}
                   disabled={thumbUploading}
-                  className="px-5 py-2 text-sm font-medium bg-neutral-900 text-white rounded hover:bg-neutral-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="px-5 py-2 text-sm font-medium bg-[#eb3403] text-white rounded hover:bg-[#c42d02] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   Publish Project
                 </button>
@@ -430,7 +430,7 @@ function StepTwo({ name, setName, description, setDescription, category, setCate
               key={cat}
               type="button"
               onClick={() => setCategory(cat)}
-              className={`px-3 py-1.5 text-xs rounded transition-all ${category === cat ? 'bg-neutral-900 text-white' : 'border border-neutral-200 text-neutral-600 hover:border-neutral-400'}`}
+              className={`px-3 py-1.5 text-xs rounded transition-all ${category === cat ? 'bg-[#eb3403] text-white' : 'border border-neutral-200 text-neutral-600 hover:border-neutral-300'}`}
             >
               {cat}
             </button>
@@ -445,7 +445,7 @@ function StepTwo({ name, setName, description, setDescription, category, setCate
               key={t}
               type="button"
               onClick={() => setTool(t)}
-              className={`py-2 text-xs rounded border transition-all ${tool === t ? 'bg-neutral-900 text-white border-neutral-900' : 'border-neutral-200 text-neutral-600 hover:border-neutral-400'}`}
+              className={`py-2 text-xs rounded border transition-all ${tool === t ? 'bg-[#eb3403] text-white border-[#eb3403]' : 'border-neutral-200 text-neutral-600 hover:border-neutral-300'}`}
             >
               {t}
             </button>

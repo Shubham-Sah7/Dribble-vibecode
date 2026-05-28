@@ -20,14 +20,14 @@ export function CategoryBar({ active, onChange }: CategoryBarProps) {
                 whileTap={{ scale: 0.97 }}
                 className={`
                   relative shrink-0 px-4 py-3 text-sm transition-colors whitespace-nowrap
-                  ${isActive ? 'text-neutral-900 font-medium' : 'text-neutral-400 hover:text-neutral-700'}
+                  ${isActive ? 'text-[#eb3403] font-medium' : 'text-neutral-400 hover:text-neutral-700'}
                 `}
               >
                 {cat.label}
                 {isActive && (
                   <motion.div
                     layoutId="categoryUnderline"
-                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-neutral-900"
+                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#eb3403]"
                     transition={{ type: 'spring', stiffness: 500, damping: 40 }}
                   />
                 )}

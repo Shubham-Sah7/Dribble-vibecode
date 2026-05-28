@@ -42,7 +42,7 @@ export function Hero({ onExplore, onUpload }: HeroProps) {
         {/* URL input + submit */}
         <form
           onSubmit={handleSubmit}
-          className="flex flex-col sm:flex-row items-stretch max-w-sm mx-auto mb-10 border border-neutral-200 rounded-lg overflow-hidden bg-white focus-within:border-neutral-400 transition-colors shadow-sm"
+          className="flex flex-col sm:flex-row items-stretch max-w-sm mx-auto mb-10 border border-neutral-200 rounded overflow-hidden bg-white focus-within:border-[#eb3403]/40 transition-colors shadow-sm"
         >
           <input
             type="url"
@@ -53,7 +53,7 @@ export function Hero({ onExplore, onUpload }: HeroProps) {
           />
           <button
             type="submit"
-            className="px-5 py-3 bg-neutral-900 text-white text-sm font-medium hover:bg-neutral-700 active:bg-neutral-800 transition-colors whitespace-nowrap border-t sm:border-t-0 sm:border-l border-neutral-200"
+            className="px-5 py-3 bg-[#eb3403] text-white text-sm font-medium hover:bg-[#c42d02] active:bg-[#a82602] transition-colors whitespace-nowrap border-t sm:border-t-0 sm:border-l border-[#eb3403]"
           >
             Submit Project
           </button>

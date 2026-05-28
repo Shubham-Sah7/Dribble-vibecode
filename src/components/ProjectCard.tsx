@@ -91,7 +91,7 @@ export function ProjectCard({ project, onClick }: ProjectCardProps) {
           {onClick && (
             <button
               onClick={onClick}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium bg-neutral-900 text-white hover:bg-neutral-700 transition-colors rounded-md shadow-sm"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium bg-[#eb3403] text-white hover:bg-[#c42d02] transition-colors rounded shadow-sm"
             >
               <Expand className="w-3 h-3" />
               Preview
@@ -103,10 +103,10 @@ export function ProjectCard({ project, onClick }: ProjectCardProps) {
               target="_blank"
               rel="noopener noreferrer"
               onClick={e => e.stopPropagation()}
-              className={`inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium transition-colors rounded-md shadow-sm ${
+              className={`inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium transition-colors rounded shadow-sm ${
                 onClick
                   ? 'border border-neutral-200 text-neutral-700 bg-white hover:bg-neutral-50'
-                  : 'bg-neutral-900 text-white hover:bg-neutral-700'
+                  : 'bg-[#eb3403] text-white hover:bg-[#c42d02]'
               }`}
             >
               <ExternalLink className="w-3 h-3" />
