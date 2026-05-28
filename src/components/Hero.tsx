@@ -7,8 +7,8 @@ interface HeroProps {
 }
 
 const stats = [
-  { value: '1,200+', label: 'Projects' },
-  { value: '4,800+', label: 'Builders' },
+  { value: '1,200+', label: 'Products' },
+  { value: '4,800+', label: 'Builders'  },
   { value: '89k',    label: 'Monthly Views' },
 ]
 
@@ -23,26 +23,26 @@ export function Hero({ onExplore, onUpload }: HeroProps) {
   return (
     <section className="bg-white border-b border-neutral-100">
       <motion.div
-        className="max-w-2xl mx-auto px-5 sm:px-8 py-24 sm:py-32 text-center"
-        initial={{ opacity: 0, y: 12 }}
+        className="max-w-2xl mx-auto px-5 sm:px-8 py-20 sm:py-28 text-center"
+        initial={{ opacity: 0, y: 14 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.45, ease: 'easeOut' }}
+        transition={{ duration: 0.5, ease: 'easeOut' }}
       >
-
         {/* Heading */}
-        <h1 className="text-[2.75rem] sm:text-6xl font-bold text-neutral-900 tracking-tight leading-[1.05] mb-5">
-          Discover products<br />built with AI.
+        <h1 className="text-[2.5rem] sm:text-[3.25rem] font-bold text-neutral-900 tracking-tight leading-[1.08] mb-5">
+          Discover beautifully crafted<br className="hidden sm:block" /> digital products.
         </h1>
 
         {/* Subtext */}
-        <p className="text-base sm:text-lg text-neutral-500 leading-relaxed max-w-md mx-auto mb-10">
-          Explore projects built with Lovable, Cursor, Bolt, v0,<br className="hidden sm:block" /> and modern AI tools.
+        <p className="text-base sm:text-lg text-neutral-500 leading-relaxed max-w-lg mx-auto mb-10">
+          Browse live websites, SaaS tools, apps, and experiments
+          shared by designers, developers, and indie makers.
         </p>
 
-        {/* Inline input + button */}
+        {/* URL input + submit */}
         <form
           onSubmit={handleSubmit}
-          className="flex flex-col sm:flex-row items-stretch max-w-sm mx-auto mb-10 border border-neutral-200 rounded-md overflow-hidden bg-white focus-within:border-neutral-400 transition-colors"
+          className="flex flex-col sm:flex-row items-stretch max-w-sm mx-auto mb-10 border border-neutral-200 rounded-lg overflow-hidden bg-white focus-within:border-neutral-400 transition-colors shadow-sm"
         >
           <input
             type="url"
@@ -79,7 +79,7 @@ export function Hero({ onExplore, onUpload }: HeroProps) {
           onClick={onExplore}
           className="mt-8 text-xs text-neutral-400 hover:text-neutral-700 transition-colors"
         >
-          Browse all projects ↓
+          Browse all products ↓
         </button>
 
       </motion.div>

@@ -76,11 +76,31 @@
   background-size: 16px 16px;
 }
 
-/* Subtle hover card */
+/* Premium hover card */
 .card-lift {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 0.2s ease;
 }
 .card-lift:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  transform: translateY(-3px);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.10), 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+/* Thumbnail zoom on card hover */
+.thumb-zoom {
+  transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+}
+.group:hover .thumb-zoom {
+  transform: scale(1.04);
+}
+
+/* Overlay fade */
+.overlay-fade {
+  opacity: 0;
+  transition: opacity 0.22s ease;
+}
+.group:hover .overlay-fade {
+  opacity: 1;
 }

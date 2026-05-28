@@ -6,7 +6,7 @@ import { useProjects } from '@/context/ProjectsContext'
 import { type Project } from '@/data/projects'
 import { compressImage, formatBytes, base64SizeKb } from '@/lib/imageUtils'
 
-const tools = ['Lovable', 'Cursor', 'Bolt', 'v0', 'Replit', 'Vercel', 'Framer', 'Custom']
+const tools = ['Lovable', 'Cursor', 'Bolt', 'v0', 'Windsurf', 'Claude', 'Replit', 'Vercel', 'Framer', 'Custom']
 const categoryOptions = ['SaaS', 'AI Tools', 'Mobile', 'Finance', 'Healthcare', 'Productivity', 'Dev Tools', 'Design']
 const ACCEPTED = ['image/jpeg', 'image/png', 'image/webp']
 
@@ -439,7 +439,7 @@ function StepTwo({ name, setName, description, setDescription, category, setCate
       </div>
       <div>
         <label className={labelClass}>Built with</label>
-        <div className="grid grid-cols-4 gap-1.5">
+        <div className="grid grid-cols-5 gap-1.5">
           {tools.map(t => (
             <button
               key={t}
