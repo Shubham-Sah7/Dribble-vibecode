@@ -1,6 +1,7 @@
 import { useState, useRef, useMemo } from 'react'
 import { Navbar } from './components/Navbar'
 import { Hero } from './components/Hero'
+import { FeaturedSection } from './components/FeaturedSection'
 import { CategoryBar } from './components/CategoryBar'
 import { FilterBar } from './components/FilterBar'
 import { ProjectCard } from './components/ProjectCard'
@@ -34,14 +35,18 @@ function sortProjects(list: Project[], filter: string): Project[] {
 function EmptyState({ searchQuery }: { searchQuery: string }) {
   return (
     <div className="py-24 flex flex-col items-center text-center">
-      <div className="w-12 h-12 rounded-xl border border-neutral-200 flex items-center justify-center mb-4">
-        {searchQuery ? <Search className="w-5 h-5 text-neutral-300" /> : <span className="text-xl">🔭</span>}
+      <div className="w-12 h-12 rounded-lg border border-neutral-200 flex items-center justify-center mb-4">
+        {searchQuery
+          ? <Search className="w-4.5 h-4.5 text-neutral-300" />
+          : <span className="text-xl">🔭</span>}
       </div>
-      <h3 className="text-sm font-medium text-neutral-700 mb-1">
+      <h3 className="text-sm font-semibold text-neutral-700 mb-1">
         {searchQuery ? `No results for "${searchQuery}"` : 'No products found'}
       </h3>
       <p className="text-xs text-neutral-400">
-        {searchQuery ? 'Try different keywords or browse all categories' : 'Try a different category or filter'}
+        {searchQuery
+          ? 'Try different keywords or browse all categories'
+          : 'Try a different category or filter'}
       </p>
     </div>
   )
@@ -49,8 +54,8 @@ function EmptyState({ searchQuery }: { searchQuery: string }) {
 
 export default function App() {
   const { projects } = useProjects()
-  const [uploadOpen,    setUploadOpen   ] = useState(false)
-  const [prefilledUrl,  setPrefilledUrl ] = useState('')
+  const [uploadOpen,      setUploadOpen     ] = useState(false)
+  const [prefilledUrl,    setPrefilledUrl   ] = useState('')
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
   const [activeCategory,  setActiveCategory ] = useState('all')
   const [activeFilter,    setActiveFilter   ] = useState('trending')
@@ -59,8 +64,6 @@ export default function App() {
 
   const filtered = useMemo(() => {
     let list = projects
-
-    // 1. Search across title, creator, tags, tool, category
     const q = searchQuery.trim().toLowerCase()
     if (q) {
       list = list.filter(p =>
@@ -71,13 +74,7 @@ export default function App() {
         p.category.toLowerCase().includes(q)
       )
     }
-
-    // 2. Category filter
-    if (activeCategory !== 'all') {
-      list = list.filter(p => p.category === activeCategory)
-    }
-
-    // 3. Sort
+    if (activeCategory !== 'all') list = list.filter(p => p.category === activeCategory)
     return sortProjects(list, activeFilter)
   }, [projects, searchQuery, activeCategory, activeFilter])
 
@@ -91,25 +88,38 @@ export default function App() {
 
   const handleSearchChange = (q: string) => {
     setSearchQuery(q)
-    // Clear category when searching so results aren't doubly-filtered
     if (q && activeCategory !== 'all') setActiveCategory('all')
   }
 
+  const isHomepage = !searchQuery && activeCategory === 'all'
+
   return (
     <div className="min-h-screen bg-white">
+
       <Navbar
         onUploadClick={() => openUpload()}
         searchQuery={searchQuery}
         onSearchChange={handleSearchChange}
       />
 
-      {/* Only show hero when not searching */}
-      {!searchQuery && (
-        <Hero onExplore={scrollToFeed} onUpload={openUpload} />
+      {/* Hero + Featured — only on homepage, not during search */}
+      {isHomepage && (
+        <>
+          <Hero onExplore={scrollToFeed} onUpload={openUpload} />
+          <FeaturedSection
+            projects={projects}
+            onProjectClick={setSelectedProject}
+          />
+        </>
       )}
 
-      <CategoryBar active={activeCategory} onChange={cat => { setActiveCategory(cat); setSearchQuery('') }} />
+      {/* Category sticky bar */}
+      <CategoryBar
+        active={activeCategory}
+        onChange={cat => { setActiveCategory(cat); setSearchQuery('') }}
+      />
 
+      {/* Main content */}
       <div ref={feedRef} className="max-w-screen-xl mx-auto px-5 sm:px-8 py-10 flex gap-10 items-start">
 
         {/* Feed */}
@@ -118,32 +128,38 @@ export default function App() {
           {/* Feed header */}
           <div className="flex items-center justify-between mb-5">
             <div>
-              <h2 className="text-sm font-semibold text-neutral-900">
+              <h2 className="text-[13px] font-semibold text-neutral-900">
                 {searchQuery
-                  ? `Search results`
+                  ? 'Search results'
                   : activeCategory === 'all' ? 'All Products' : activeCategory}
               </h2>
               <p className="text-xs text-neutral-400 mt-0.5">
                 {filtered.length} {filtered.length === 1 ? 'product' : 'products'}
-                {searchQuery && <span className="ml-1">for "<span className="text-neutral-600">{searchQuery}</span>"</span>}
+                {searchQuery && (
+                  <span className="ml-1">
+                    for "<span className="text-neutral-600">{searchQuery}</span>"
+                  </span>
+                )}
               </p>
             </div>
 
-            {/* Clear search */}
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="text-xs text-neutral-500 hover:text-neutral-900 transition-colors border border-neutral-200 rounded px-3 py-1.5 hover:border-neutral-300"
+                className="text-xs text-neutral-500 hover:text-neutral-900 border border-neutral-200 rounded px-3 py-1.5 hover:border-neutral-300 transition-colors"
               >
                 Clear search
               </button>
             )}
           </div>
 
-          {!searchQuery && <FilterBar active={activeFilter} onChange={setActiveFilter} />}
+          {/* Filter pills — only when not searching */}
+          {!searchQuery && (
+            <FilterBar active={activeFilter} onChange={setActiveFilter} />
+          )}
 
           {/* Grid */}
-          <div className={searchQuery ? 'mt-0' : 'mt-6'}>
+          <div className={!searchQuery ? 'mt-6' : 'mt-0'}>
             {filtered.length === 0 ? (
               <EmptyState searchQuery={searchQuery} />
             ) : (
