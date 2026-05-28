@@ -47,7 +47,7 @@ export function Hero({ onExplore, onUpload }: HeroProps) {
 
             {/* Subtext */}
             <p className="text-base sm:text-[17px] text-neutral-500 leading-relaxed max-w-md mb-9">
-              Browse live websites, SaaS tools, apps, and experiments
+              Browse launched products, MVPs, side projects, and experiments
               shared by designers, developers, and indie makers worldwide.
             </p>
 

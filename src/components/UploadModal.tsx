@@ -1,13 +1,22 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Tag, ImageIcon, Check, Loader2, AlertTriangle, Upload, Trash2 } from 'lucide-react'
-import { useUrlPreview } from '@/hooks/useUrlPreview'
+import { useUrlPreview, normalizeUrl } from '@/hooks/useUrlPreview'
 import { useProjects } from '@/context/ProjectsContext'
 import { type Project } from '@/data/projects'
 import { compressImage, formatBytes, base64SizeKb } from '@/lib/imageUtils'
 
-const tools = ['Lovable', 'Cursor', 'Bolt', 'v0', 'Windsurf', 'Claude', 'Replit', 'Vercel', 'Framer', 'Custom']
-const categoryOptions = ['SaaS', 'AI Tools', 'Mobile', 'Finance', 'Healthcare', 'Productivity', 'Dev Tools', 'Design']
+const tools = [
+  'Lovable', 'Cursor', 'Bolt', 'v0', 'Windsurf',
+  'Claude', 'Replit', 'Vercel', 'Netlify', 'Webflow',
+  'Framer', 'Figma', 'GitHub', 'WordPress', 'Custom',
+]
+
+const categoryOptions = [
+  'Websites', 'SaaS', 'AI Tools', 'Mobile', 'Dev Tools',
+  'Design', 'Productivity', 'Finance', 'Healthcare',
+]
+
 const ACCEPTED = ['image/jpeg', 'image/png', 'image/webp']
 
 interface UploadModalProps {
@@ -16,17 +25,24 @@ interface UploadModalProps {
   prefilledUrl?: string
 }
 
-function detectTool(url: string): string {
+function detectTool(rawUrl: string): string {
   try {
-    const host = new URL(url).hostname
-    if (host.includes('lovable')) return 'Lovable'
+    const host = new URL(normalizeUrl(rawUrl)).hostname.toLowerCase()
+    if (host.includes('lovable.app') || host.includes('lovableproject.com')) return 'Lovable'
     if (host.includes('cursor')) return 'Cursor'
-    if (host.includes('bolt')) return 'Bolt'
+    if (host.includes('bolt.new') || host.includes('stackblitz.io')) return 'Bolt'
     if (host.includes('v0.dev')) return 'v0'
-    if (host.includes('replit')) return 'Replit'
-    if (host.includes('vercel.app') || host.includes('vercel.com')) return 'Vercel'
-    if (host.includes('framer')) return 'Framer'
-    if (host.includes('github.io')) return 'Custom'
+    if (host.includes('replit.app') || host.includes('repl.co')) return 'Replit'
+    if (host.includes('vercel.app') || host === 'vercel.com') return 'Vercel'
+    if (host.includes('netlify.app') || host.includes('.netlify.com')) return 'Netlify'
+    if (host.includes('webflow.io') || host.includes('webflow.com')) return 'Webflow'
+    if (host.includes('framer.app') || host.includes('framer.site') || host.includes('framer.com')) return 'Framer'
+    if (host.includes('figma.com')) return 'Figma'
+    if (host.includes('github.io') || host.includes('github.com')) return 'GitHub'
+    if (host.includes('emergent.sh') || host.includes('anthropic')) return 'Claude'
+    if (host.includes('windsurf')) return 'Windsurf'
+    if (host.includes('wix.com') || host.includes('wixsite.com')) return 'Custom'
+    if (host.includes('wordpress.com') || host.includes('wordpress.org')) return 'WordPress'
   } catch { /* ignore */ }
   return ''
 }
@@ -38,7 +54,7 @@ export function UploadModal({ open, onOpenChange, prefilledUrl = '' }: UploadMod
   const [step, setStep] = useState(1)
   const [published, setPublished] = useState(false)
 
-  // Step 1
+  // Step 1 — raw URL as typed; we normalize on blur + before saving
   const [liveUrl, setLiveUrl] = useState(prefilledUrl)
 
   // Step 2
@@ -61,7 +77,9 @@ export function UploadModal({ open, onOpenChange, prefilledUrl = '' }: UploadMod
   const [isDragging, setIsDragging] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const preview = useUrlPreview(step >= 1 ? liveUrl : '')
+  // Always pass normalized URL to the preview hook
+  const normalizedPreviewUrl = normalizeUrl(liveUrl)
+  const preview = useUrlPreview(step >= 1 ? normalizedPreviewUrl : '')
 
   // Auto-fill metadata from URL preview
   useEffect(() => {
@@ -92,6 +110,12 @@ export function UploadModal({ open, onOpenChange, prefilledUrl = '' }: UploadMod
     setThumbnail(null); setThumbUploading(false)
     setThumbError(null); setThumbOriginalSize(0)
     setThumbCompressedKb(0); setIsDragging(false)
+  }
+
+  // Normalize the URL on blur so the field shows the clean version
+  const handleUrlBlur = () => {
+    const norm = normalizeUrl(liveUrl)
+    if (norm && norm !== liveUrl) setLiveUrl(norm)
   }
 
   const addTag = () => {
@@ -131,7 +155,6 @@ export function UploadModal({ open, onOpenChange, prefilledUrl = '' }: UploadMod
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) processFile(file)
-    // reset so the same file can be re-selected
     e.target.value = ''
   }
 
@@ -146,14 +169,16 @@ export function UploadModal({ open, onOpenChange, prefilledUrl = '' }: UploadMod
   const handleDragLeave = () => setIsDragging(false)
 
   const handlePublish = () => {
-    // Thumbnail priority: manual upload > Microlink screenshot > none
-    const finalThumbnail = thumbnail ?? preview.screenshotUrl ?? undefined
+    // Always save with a properly normalized URL
+    const savedUrl = normalizeUrl(liveUrl) || liveUrl
+    // Thumbnail priority: manual upload > Microlink screenshot > OG image > none
+    const finalThumbnail = thumbnail ?? preview.screenshotUrl ?? preview.ogImageUrl ?? undefined
 
     const project: Project = {
       id: ++nextId,
       title: name || 'Untitled Project',
       description: description || 'A project built with AI tools.',
-      category: category || 'SaaS',
+      category: category || 'Websites',
       tags,
       tool: tool || 'Custom',
       creator: {
@@ -166,7 +191,7 @@ export function UploadModal({ open, onOpenChange, prefilledUrl = '' }: UploadMod
       likes: 0,
       views: '0',
       saves: 0,
-      liveUrl,
+      liveUrl: savedUrl,
       codeUrl,
       gradient: '',
       accentColor: '#6366f1',
@@ -191,6 +216,9 @@ export function UploadModal({ open, onOpenChange, prefilledUrl = '' }: UploadMod
 
   if (!open) return null
 
+  // Best available auto-preview to pass down
+  const autoPreviewUrl = preview.screenshotUrl ?? preview.ogImageUrl
+
   return (
     <AnimatePresence>
       <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
@@ -213,7 +241,7 @@ export function UploadModal({ open, onOpenChange, prefilledUrl = '' }: UploadMod
           <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-100">
             <div>
               <h2 className="text-sm font-semibold text-neutral-900">Submit a Project</h2>
-              <p className="text-xs text-neutral-400 mt-0.5">Share your vibe-coded build with the world</p>
+              <p className="text-xs text-neutral-400 mt-0.5">Share anything — launched, WIP, prototype, or experiment</p>
             </div>
             <button
               onClick={() => onOpenChange(false)}
@@ -254,6 +282,7 @@ export function UploadModal({ open, onOpenChange, prefilledUrl = '' }: UploadMod
               <StepOne
                 liveUrl={liveUrl}
                 setLiveUrl={setLiveUrl}
+                onBlurNormalize={handleUrlBlur}
                 preview={preview}
                 inputClass={inputClass}
                 labelClass={labelClass}
@@ -286,7 +315,7 @@ export function UploadModal({ open, onOpenChange, prefilledUrl = '' }: UploadMod
                 handleDrop={handleDrop}
                 handleDragOver={handleDragOver}
                 handleDragLeave={handleDragLeave}
-                autoPreviewUrl={preview.screenshotUrl}
+                autoPreviewUrl={autoPreviewUrl}
                 inputClass={inputClass}
                 labelClass={labelClass}
               />
@@ -333,31 +362,40 @@ interface PreviewData {
   loading: boolean
   error: string | null
   screenshotUrl?: string
+  ogImageUrl?: string
   title?: string
   description?: string
 }
 
-function StepOne({ liveUrl, setLiveUrl, preview, inputClass, labelClass }: {
+function StepOne({ liveUrl, setLiveUrl, onBlurNormalize, preview, inputClass, labelClass }: {
   liveUrl: string
   setLiveUrl: (v: string) => void
+  onBlurNormalize: () => void
   preview: PreviewData
   inputClass: string
   labelClass: string
 }) {
+  // Best image to show in the preview panel
+  const previewImage = preview.screenshotUrl ?? preview.ogImageUrl
+
   return (
     <>
       <div>
         <label className={labelClass}>Project URL</label>
         <input
-          type="url"
+          type="text"
           value={liveUrl}
           onChange={e => setLiveUrl(e.target.value)}
-          placeholder="https://your-project.vercel.app"
+          onBlur={onBlurNormalize}
+          placeholder="yourproject.vercel.app"
           className={inputClass}
           autoFocus
+          autoComplete="off"
+          spellCheck={false}
         />
-        <p className="mt-1.5 text-[11px] text-neutral-400">
-          Works with Vercel, Lovable, Replit, GitHub Pages, and any live URL.
+        <p className="mt-1.5 text-[11px] text-neutral-400 leading-relaxed">
+          Paste any link — Vercel, Netlify, Lovable, Replit, Framer, Webflow, Figma,
+          GitHub Pages, staging URLs, custom domains. No https:// required.
         </p>
       </div>
 
@@ -367,22 +405,23 @@ function StepOne({ liveUrl, setLiveUrl, preview, inputClass, labelClass }: {
             {preview.loading && (
               <div className="flex flex-col items-center gap-2">
                 <Loader2 className="w-4 h-4 text-neutral-400 animate-spin" />
-                <span className="text-xs text-neutral-400">Generating preview…</span>
+                <span className="text-xs text-neutral-400">Fetching preview…</span>
               </div>
             )}
             {!preview.loading && preview.error && (
               <div className="flex flex-col items-center gap-1.5 text-center px-4">
-                <AlertTriangle className="w-4 h-4 text-neutral-300" />
-                <span className="text-xs text-neutral-400">Preview unavailable — project will still be submitted</span>
+                <span className="text-lg">🔗</span>
+                <span className="text-xs text-neutral-500 font-medium">Link saved — no preview available</span>
+                <span className="text-[11px] text-neutral-400">You can upload a screenshot manually in the next step</span>
               </div>
             )}
-            {!preview.loading && !preview.error && preview.screenshotUrl && (
-              <img src={preview.screenshotUrl} alt="Preview" className="w-full h-full object-cover object-top" />
+            {!preview.loading && !preview.error && previewImage && (
+              <img src={previewImage} alt="Preview" className="w-full h-full object-cover object-top" />
             )}
-            {!preview.loading && !preview.error && !preview.screenshotUrl && liveUrl && (
+            {!preview.loading && !preview.error && !previewImage && liveUrl && (
               <div className="flex flex-col items-center gap-1.5">
                 <div className="w-8 h-8 rounded-full bg-neutral-100 border border-neutral-200 flex items-center justify-center text-sm">✓</div>
-                <span className="text-xs text-neutral-500">URL looks valid</span>
+                <span className="text-xs text-neutral-500">Link accepted</span>
               </div>
             )}
           </div>
@@ -445,7 +484,7 @@ function StepTwo({ name, setName, description, setDescription, category, setCate
               key={t}
               type="button"
               onClick={() => setTool(t)}
-              className={`py-2 text-xs rounded border transition-all ${tool === t ? 'bg-[#eb3403] text-white border-[#eb3403]' : 'border-neutral-200 text-neutral-600 hover:border-neutral-300'}`}
+              className={`py-2 text-[11px] rounded border transition-all ${tool === t ? 'bg-[#eb3403] text-white border-[#eb3403]' : 'border-neutral-200 text-neutral-600 hover:border-neutral-300'}`}
             >
               {t}
             </button>
@@ -453,7 +492,7 @@ function StepTwo({ name, setName, description, setDescription, category, setCate
         </div>
       </div>
       <div>
-        <label className={labelClass}>GitHub URL <span className="text-neutral-400 font-normal">(optional)</span></label>
+        <label className={labelClass}>GitHub / source URL <span className="text-neutral-400 font-normal">(optional)</span></label>
         <input value={codeUrl} onChange={e => setCodeUrl(e.target.value)} placeholder="https://github.com/you/project" className={inputClass} />
       </div>
     </>
@@ -535,7 +574,7 @@ function StepThree({
           Thumbnail
           {autoPreviewUrl && !thumbnail && (
             <span className="ml-1.5 text-neutral-400 font-normal">
-              — auto-generated from URL if skipped
+              — auto-generated if skipped
             </span>
           )}
         </label>

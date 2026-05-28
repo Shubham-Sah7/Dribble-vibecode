@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, ExternalLink, Code2, Heart, Eye, AlertTriangle, Loader2 } from 'lucide-react'
+import { X, ExternalLink, Code2, Heart, Eye, Loader2 } from 'lucide-react'
 import { type Project } from '@/data/projects'
 
 interface ProjectDetailModalProps {
@@ -10,6 +10,11 @@ interface ProjectDetailModalProps {
 
 export function ProjectDetailModal({ project, onClose }: ProjectDetailModalProps) {
   const [iframeStatus, setIframeStatus] = useState<'loading' | 'loaded' | 'error'>('loading')
+
+  // Reset iframe status whenever the project changes so we get a fresh load spinner
+  useEffect(() => {
+    setIframeStatus('loading')
+  }, [project?.id])
 
   if (!project) return null
 
@@ -101,19 +106,35 @@ export function ProjectDetailModal({ project, onClose }: ProjectDetailModalProps
                   </div>
                 )}
 
-                {/* Error state — show screenshot or fallback */}
+                {/* Error state — show screenshot if available, else a clean prompt */}
                 {iframeStatus === 'error' && (
                   project.screenshotUrl ? (
-                    <img
-                      src={project.screenshotUrl}
-                      alt={project.title}
-                      className="w-full h-full object-cover object-top"
-                    />
+                    /* Screenshot fills the preview area seamlessly */
+                    <div className="absolute inset-0">
+                      <img
+                        src={project.screenshotUrl}
+                        alt={project.title}
+                        className="w-full h-full object-cover object-top"
+                      />
+                      {/* Subtle overlay with "Open" CTA */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent flex items-end justify-center pb-8">
+                        <a
+                          href={project.liveUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold bg-white text-neutral-900 hover:bg-neutral-100 transition-colors rounded shadow-lg"
+                        >
+                          <ExternalLink className="w-3 h-3" />
+                          Open in new tab
+                        </a>
+                      </div>
+                    </div>
                   ) : (
                     <div className="absolute inset-0 flex flex-col items-center justify-center text-center gap-3">
-                      <AlertTriangle className="w-6 h-6 text-neutral-300" />
+                      <div className="w-12 h-12 rounded-xl bg-neutral-100 border border-neutral-200 flex items-center justify-center text-xl">🔗</div>
+                      <p className="text-sm font-medium text-neutral-700">{project.title}</p>
                       <p className="text-xs text-neutral-400 max-w-xs">
-                        This site can't be embedded due to security restrictions.
+                        This site doesn't allow embedding — open it directly to view.
                       </p>
                       <a
                         href={project.liveUrl}

@@ -4,8 +4,32 @@ export interface UrlPreviewData {
   title?: string
   description?: string
   screenshotUrl?: string
+  ogImageUrl?: string
   loading: boolean
   error: string | null
+}
+
+/**
+ * Normalize a raw URL string.
+ * Handles: bare domains (myapp.vercel.app), //domain, http://, https://
+ */
+export function normalizeUrl(raw: string): string {
+  const trimmed = raw.trim()
+  if (!trimmed) return ''
+  if (/^https?:\/\//i.test(trimmed)) return trimmed
+  if (trimmed.startsWith('//')) return `https:${trimmed}`
+  // Anything with a dot is likely a domain — prepend https://
+  if (trimmed.includes('.')) return `https://${trimmed}`
+  return trimmed
+}
+
+function isUsableUrl(str: string): boolean {
+  try {
+    const u = new URL(str)
+    return u.protocol === 'http:' || u.protocol === 'https:'
+  } catch {
+    return false
+  }
 }
 
 export function useUrlPreview(url: string): UrlPreviewData {
@@ -17,7 +41,8 @@ export function useUrlPreview(url: string): UrlPreviewData {
     if (timerRef.current) clearTimeout(timerRef.current)
     if (abortRef.current) abortRef.current.abort()
 
-    if (!url || !isValidUrl(url)) {
+    // The hook already receives a normalized URL from UploadModal
+    if (!url || !isUsableUrl(url)) {
       setData({ loading: false, error: null })
       return
     }
@@ -29,17 +54,21 @@ export function useUrlPreview(url: string): UrlPreviewData {
       abortRef.current = controller
 
       try {
-        const apiUrl = `https://api.microlink.io?url=${encodeURIComponent(url)}&screenshot=true&meta=false&embed=screenshot.url`
+        // Fetch screenshot + OG/meta data together (no meta=false → we get image/logo too)
+        const apiUrl = `https://api.microlink.io?url=${encodeURIComponent(url)}&screenshot=true`
         const res = await fetch(apiUrl, { signal: controller.signal })
         const json = await res.json()
 
         if (json.status === 'success') {
+          const d = json.data ?? {}
           setData({
             loading: false,
             error: null,
-            title: json.data?.title ?? undefined,
-            description: json.data?.description ?? undefined,
-            screenshotUrl: json.data?.screenshot?.url ?? undefined,
+            title: d.title ?? undefined,
+            description: d.description ?? undefined,
+            screenshotUrl: d.screenshot?.url ?? undefined,
+            // OG / social image as a fallback thumbnail
+            ogImageUrl: d.image?.url ?? d.logo?.url ?? undefined,
           })
         } else {
           setData({ loading: false, error: 'Could not generate preview' })
@@ -58,13 +87,4 @@ export function useUrlPreview(url: string): UrlPreviewData {
   }, [url])
 
   return data
-}
-
-function isValidUrl(str: string): boolean {
-  try {
-    const u = new URL(str)
-    return u.protocol === 'http:' || u.protocol === 'https:'
-  } catch {
-    return false
-  }
 }
