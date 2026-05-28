@@ -28,8 +28,9 @@ export interface Project {
   isUserSubmitted?: boolean
 }
 
-// picsum.photos with fixed seeds → consistent beautiful placeholder screenshots
-const pic = (seed: string) => `https://picsum.photos/seed/${seed}/800/500`
+// Real product screenshots extracted directly from the Figma design file
+// 21 unique images from the Dribbble Clone design (1024×768 each)
+const img = (n: number) => `/projects/img-${String(n).padStart(2, '0')}.jpg`
 
 export const projects: Project[] = [
   {
@@ -45,7 +46,7 @@ export const projects: Project[] = [
     gradient: "from-emerald-950 via-emerald-900/70 to-teal-950",
     accentColor: "#10b981",
     cardSize: "square", featured: true, trending: true,
-    screenshotUrl: pic("vibbl-finance1"),
+    screenshotUrl: img(1),
   },
   {
     id: 2,
@@ -60,7 +61,7 @@ export const projects: Project[] = [
     gradient: "from-violet-950 via-purple-900/70 to-fuchsia-950",
     accentColor: "#8b5cf6",
     cardSize: "normal", trending: true,
-    screenshotUrl: pic("vibbl-ai2"),
+    screenshotUrl: img(2),
   },
   {
     id: 3,
@@ -75,7 +76,7 @@ export const projects: Project[] = [
     gradient: "from-blue-950 via-indigo-900/70 to-blue-950",
     accentColor: "#3b82f6",
     cardSize: "normal",
-    screenshotUrl: pic("vibbl-web3"),
+    screenshotUrl: img(3),
   },
   {
     id: 4,
@@ -90,7 +91,7 @@ export const projects: Project[] = [
     gradient: "from-zinc-900 via-slate-900/70 to-zinc-950",
     accentColor: "#f59e0b",
     cardSize: "tall", featured: true, trending: true,
-    screenshotUrl: pic("vibbl-dev4"),
+    screenshotUrl: img(4),
   },
   {
     id: 5,
@@ -105,7 +106,7 @@ export const projects: Project[] = [
     gradient: "from-amber-950 via-orange-900/70 to-amber-950",
     accentColor: "#f97316",
     cardSize: "normal",
-    screenshotUrl: pic("vibbl-prod5"),
+    screenshotUrl: img(5),
   },
   {
     id: 6,
@@ -120,7 +121,7 @@ export const projects: Project[] = [
     gradient: "from-cyan-950 via-sky-900/70 to-cyan-950",
     accentColor: "#06b6d4",
     cardSize: "square",
-    screenshotUrl: pic("vibbl-health6"),
+    screenshotUrl: img(6),
   },
   {
     id: 7,
@@ -135,7 +136,7 @@ export const projects: Project[] = [
     gradient: "from-pink-950 via-rose-900/70 to-pink-950",
     accentColor: "#ec4899",
     cardSize: "normal", trending: true,
-    screenshotUrl: pic("vibbl-saas7"),
+    screenshotUrl: img(7),
   },
   {
     id: 8,
@@ -150,7 +151,7 @@ export const projects: Project[] = [
     gradient: "from-indigo-950 via-violet-900/70 to-indigo-950",
     accentColor: "#6366f1",
     cardSize: "normal",
-    screenshotUrl: pic("vibbl-data8"),
+    screenshotUrl: img(8),
   },
   {
     id: 9,
@@ -165,7 +166,7 @@ export const projects: Project[] = [
     gradient: "from-red-950 via-orange-900/70 to-red-950",
     accentColor: "#ef4444",
     cardSize: "tall", featured: true,
-    screenshotUrl: pic("vibbl-ecom9"),
+    screenshotUrl: img(9),
   },
   {
     id: 10,
@@ -180,7 +181,7 @@ export const projects: Project[] = [
     gradient: "from-fuchsia-950 via-purple-900/70 to-fuchsia-950",
     accentColor: "#a855f7",
     cardSize: "normal", trending: true,
-    screenshotUrl: pic("vibbl-indie10"),
+    screenshotUrl: img(10),
   },
   {
     id: 11,
@@ -195,7 +196,7 @@ export const projects: Project[] = [
     gradient: "from-teal-950 via-emerald-900/70 to-teal-950",
     accentColor: "#14b8a6",
     cardSize: "square", featured: true, trending: true,
-    screenshotUrl: pic("vibbl-ai11"),
+    screenshotUrl: img(11),
   },
   {
     id: 12,
@@ -210,7 +211,7 @@ export const projects: Project[] = [
     gradient: "from-rose-950 via-pink-900/70 to-fuchsia-950",
     accentColor: "#f43f5e",
     cardSize: "normal",
-    screenshotUrl: pic("vibbl-brand12"),
+    screenshotUrl: img(12),
   },
   {
     id: 13,
@@ -225,7 +226,7 @@ export const projects: Project[] = [
     gradient: "from-sky-950 via-blue-900/70 to-sky-950",
     accentColor: "#0ea5e9",
     cardSize: "normal",
-    screenshotUrl: pic("vibbl-pitch13"),
+    screenshotUrl: img(13),
   },
   {
     id: 14,
@@ -240,7 +241,7 @@ export const projects: Project[] = [
     gradient: "from-lime-950 via-green-900/70 to-lime-950",
     accentColor: "#84cc16",
     cardSize: "normal",
-    screenshotUrl: pic("vibbl-notes14"),
+    screenshotUrl: img(14),
   },
   {
     id: 15,
@@ -255,7 +256,7 @@ export const projects: Project[] = [
     gradient: "from-yellow-950 via-amber-900/70 to-yellow-950",
     accentColor: "#f59e0b",
     cardSize: "tall", trending: true,
-    screenshotUrl: pic("vibbl-devops15"),
+    screenshotUrl: img(15),
   }
 ]
 
