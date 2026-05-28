@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Search, Menu, X } from 'lucide-react'
+import { Search, X } from 'lucide-react'
 
 interface NavbarProps {
   onUploadClick: () => void
@@ -9,14 +9,14 @@ interface NavbarProps {
 
 function PGLogo() {
   return (
-    <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Product Gallery">
-      <rect width="30" height="30" rx="5" fill="#1c1c1c" />
+    <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Product Gallery">
+      <rect width="28" height="28" fill="#0a0a0a" />
       <text
-        x="15" y="21.5"
+        x="14" y="19.5"
         textAnchor="middle"
         fontFamily="'Arial Black','Helvetica Neue',Arial,sans-serif"
         fontWeight="900"
-        fontSize="16"
+        fontSize="13"
         fill="#eb3403"
         letterSpacing="-0.5"
       >PG</text>
@@ -28,25 +28,28 @@ export function Navbar({ onUploadClick, searchQuery, onSearchChange }: NavbarPro
   const [mobileOpen, setMobileOpen] = useState(false)
 
   return (
-    <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-neutral-200">
-      <div className="max-w-screen-xl mx-auto px-5 sm:px-8 h-14 flex items-center gap-5">
+    <nav className="sticky top-0 z-50 bg-white border-b-2 border-neutral-900">
+      <div className="max-w-[1440px] mx-auto px-5 sm:px-8 h-14 flex items-center gap-5">
 
-        {/* Logo */}
-        <a href="#" className="flex items-center gap-2.5 shrink-0 hover:opacity-80 transition-opacity">
+        {/* Logo + Wordmark */}
+        <a href="#" className="flex items-center gap-2.5 shrink-0">
           <PGLogo />
-          <span className="font-semibold text-[15px] text-neutral-900 tracking-tight hidden sm:block">
+          <span className="font-black text-[13px] text-neutral-900 tracking-tight hidden sm:block uppercase">
             Product Gallery
           </span>
         </a>
 
+        {/* Divider */}
+        <div className="hidden md:block h-4 w-px bg-neutral-300 shrink-0" />
+
         {/* Search */}
-        <div className="hidden sm:flex flex-1 max-w-xs relative">
+        <div className="hidden sm:flex flex-1 max-w-sm relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-neutral-400 pointer-events-none" />
           <input
             value={searchQuery}
             onChange={e => onSearchChange(e.target.value)}
             placeholder="Search products, makers, tools…"
-            className="w-full bg-neutral-50 border border-neutral-200 rounded px-9 py-1.5 text-sm text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:border-[#eb3403]/40 focus:bg-white transition-all"
+            className="w-full bg-neutral-50 border border-neutral-200 hover:border-neutral-400 rounded-none px-9 py-1.5 text-[13px] text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:border-neutral-900 focus:bg-white transition-all"
           />
           {searchQuery && (
             <button
@@ -60,11 +63,11 @@ export function Navbar({ onUploadClick, searchQuery, onSearchChange }: NavbarPro
 
         {/* Nav links */}
         <div className="hidden md:flex items-center">
-          {['Explore', 'Makers', 'Leaderboard'].map(item => (
+          {['Explore', 'Makers', 'Trending'].map(item => (
             <a
               key={item}
               href="#"
-              className="px-3 py-1.5 text-sm text-neutral-500 hover:text-neutral-900 transition-colors"
+              className="px-3 py-1.5 text-[10px] font-bold text-neutral-500 hover:text-neutral-900 uppercase tracking-widest transition-colors"
             >
               {item}
             </a>
@@ -75,45 +78,45 @@ export function Navbar({ onUploadClick, searchQuery, onSearchChange }: NavbarPro
         <div className="flex items-center gap-3 ml-auto">
           <button
             onClick={onUploadClick}
-            className="hidden sm:flex items-center gap-1.5 px-4 py-1.5 text-sm font-medium bg-[#eb3403] text-white hover:bg-[#c42d02] active:bg-[#a82602] transition-colors rounded"
+            className="hidden sm:flex items-center gap-1.5 px-4 py-2 text-[10px] font-black uppercase tracking-widest bg-[#eb3403] text-white hover:bg-[#c42d02] active:bg-[#a82602] transition-colors rounded-none"
           >
             Submit
           </button>
 
-          <div className="w-7 h-7 rounded-full bg-neutral-200 flex items-center justify-center text-[11px] font-semibold text-neutral-600 cursor-pointer hover:bg-neutral-300 transition-colors select-none">
+          <div className="w-7 h-7 rounded-full bg-neutral-900 flex items-center justify-center text-[10px] font-black text-white cursor-pointer hover:bg-neutral-700 transition-colors select-none">
             VS
           </div>
 
           <button
-            className="md:hidden w-8 h-8 flex items-center justify-center text-neutral-500 hover:text-neutral-900 transition-colors"
+            className="md:hidden w-8 h-8 flex items-center justify-center text-neutral-700 hover:text-neutral-900 border border-neutral-200 hover:border-neutral-900 transition-all"
             onClick={() => setMobileOpen(!mobileOpen)}
           >
-            {mobileOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+            <span className="text-base font-black leading-none">{mobileOpen ? '×' : '≡'}</span>
           </button>
         </div>
       </div>
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="md:hidden border-t border-neutral-200 bg-white px-5 py-4 space-y-1">
-          <div className="relative mb-3">
+        <div className="md:hidden border-t-2 border-neutral-900 bg-white px-5 py-4 space-y-1">
+          <div className="relative mb-4">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-neutral-400 pointer-events-none" />
             <input
               value={searchQuery}
               onChange={e => onSearchChange(e.target.value)}
-              placeholder="Search products, makers, tools…"
-              className="w-full bg-neutral-50 border border-neutral-200 rounded pl-9 pr-3 py-2 text-sm focus:outline-none focus:border-[#eb3403]/40 transition-all"
+              placeholder="Search products…"
+              className="w-full bg-neutral-50 border border-neutral-200 rounded-none pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:border-neutral-900 transition-all"
             />
           </div>
-          {['Explore', 'Makers', 'Leaderboard'].map(item => (
-            <a key={item} href="#" className="block px-2 py-2 text-sm text-neutral-600 hover:text-neutral-900 transition-colors">
+          {['Explore', 'Makers', 'Trending'].map(item => (
+            <a key={item} href="#" className="flex items-center px-1 py-3 text-[10px] font-black uppercase tracking-widest text-neutral-500 hover:text-neutral-900 border-b border-neutral-100 transition-colors">
               {item}
             </a>
           ))}
-          <div className="pt-2 border-t border-neutral-100 mt-2">
+          <div className="pt-3">
             <button
               onClick={() => { onUploadClick(); setMobileOpen(false) }}
-              className="w-full py-2 text-sm font-medium bg-[#eb3403] text-white hover:bg-[#c42d02] rounded transition-colors"
+              className="w-full py-3 text-[10px] font-black uppercase tracking-widest bg-[#eb3403] text-white hover:bg-[#c42d02] transition-colors rounded-none"
             >
               Submit a Project
             </button>
